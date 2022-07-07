@@ -12,6 +12,7 @@ contract SCE is ERC20, AccessControl {
     uint public MAX_SUPPLY = 25_000_000_000 * (10 ** decimals());
     uint public DAILY_MINT = 12_500_000 * (10 ** decimals());
     address public CLAIM_POOL;
+    uint public theLastMint;
 
     bool public isInPreventBotMode;
     BPContract public BP;
@@ -33,6 +34,9 @@ contract SCE is ERC20, AccessControl {
 
     function mint() external onlyRole(MINTER_ROLE) {
         require(CLAIM_POOL != address(0), "SCE:: must be config claim pool");
+        uint currentMint = block.timestamp / 1 days;
+        require(currentMint > theLastMint, "SCE:: Not time yet");
+        theLastMint = currentMint;
         uint supplyAfterMint = totalSupply() + DAILY_MINT;
         uint amount = supplyAfterMint > MAX_SUPPLY ? MAX_SUPPLY - totalSupply() : DAILY_MINT;
         require(amount > 0, "SCE:: max minted");
